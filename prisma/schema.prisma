@@ -1,0 +1,107 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id            String   @id @default(cuid())
+  email         String   @unique
+  passwordHash  String?
+  name          String?
+  userType      String?  @default("buyer") // buyer, business
+  image         String?
+  role          String?  @default("user") // user, admin
+  country       String?
+  defaultLanguage String? @default("en")
+  permissions   Json?    @default("{}")
+
+  // Location
+  locationLat   Float?
+  locationLng   Float?
+
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  buyerProfile    BuyerProfile?
+  businessProfile BusinessProfile?
+  deals           Deal[]
+  accounts        Account[]
+  sessions        Session[]
+}
+
+model Account {
+  id                String  @id @default(cuid())
+  userId            String
+  type              String
+  provider          String
+  providerAccountId String
+  refreshToken      String?
+  accessToken       String?
+  expiresAt         Int?
+  tokenType         String?
+  scope             String?
+  idToken           String?
+  sessionState      String?
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([provider, providerAccountId])
+}
+
+model Session {
+  id           String   @id @default(cuid())
+  sessionToken String   @unique
+  userId       String
+  expires      DateTime
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model VerificationToken {
+  identifier String
+  token      String   @unique
+  expires    DateTime
+
+  @@unique([identifier, token])
+}
+
+model BuyerProfile {
+  userId              String   @id
+  preferredCategories String[] @default([])
+  maxRadiusKm         Int      @default(10)
+  rewardPoints        Int      @default(0)
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model BusinessProfile {
+  userId          String  @id
+  businessName    String?
+  businessType    String?
+  serviceRadiusKm Int     @default(20)
+  verified        Boolean @default(false)
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model Deal {
+  id               String   @id @default(cuid())
+  businessId       String
+  title            String
+  description      String?
+  discountPercent  Int?
+  category         String?
+  validUntil       DateTime?
+  isGroupBuy       Boolean  @default(false)
+  minGroupSize     Int?
+  locationLat      Float?
+  locationLng      Float?
+  active           Boolean  @default(true)
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+
+  business User @relation(fields: [businessId], references: [id], onDelete: Cascade)
+}
