@@ -13,6 +13,7 @@ import {
 import {
   Briefcase, MessageSquare, Monitor, BookOpen, Bell, Gift, Package, LifeBuoy,
   LayoutDashboard, Bot, ChevronRight, LogOut, Settings, Shield, Users, Zap, Menu, X,
+  Building2,
 } from "lucide-react";
 import { toast } from "sonner";
 
@@ -31,6 +32,7 @@ export default function DashboardPage() {
     { path: "/logistics", icon: Package, name: "Logistics Hub", desc: "Asset inventory, fleet management & SCM", color: "amber" },
     { path: "/request-service", icon: LifeBuoy, name: "Request Service", desc: "IT, logistics, medical, security & office supply", color: "teal" },
     { path: "/erp", icon: LayoutDashboard, name: "ERP Hub", desc: "Finance, SCM, production & AI-powered ERP", color: "indigo" },
+    { path: "/dashboard/business/rm-hub", icon: Building2, name: "RM Hub", desc: "Employees, hiring, payroll & performance management", color: "emerald" },
   ];
 
   const colorMap: Record<string, { border: string; text: string; bg: string }> = {
@@ -42,6 +44,7 @@ export default function DashboardPage() {
     amber: { border: "border-t-amber-500", text: "text-amber-400", bg: "bg-amber-500/10" },
     teal: { border: "border-t-teal-500", text: "text-teal-400", bg: "bg-teal-500/10" },
     indigo: { border: "border-t-indigo-500", text: "text-indigo-400", bg: "bg-indigo-500/10" },
+    emerald: { border: "border-t-emerald-500", text: "text-emerald-400", bg: "bg-emerald-500/10" },
   };
 
   const handleLogout = async () => {
