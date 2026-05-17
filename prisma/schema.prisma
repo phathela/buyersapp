@@ -31,6 +31,8 @@ model User {
   deals           Deal[]
   accounts        Account[]
   sessions        Session[]
+  employees       Employee[]
+  jobPostings     JobPosting[]
 }
 
 model Account {
@@ -104,4 +106,205 @@ model Deal {
   updatedAt        DateTime @updatedAt
 
   business User @relation(fields: [businessId], references: [id], onDelete: Cascade)
+}
+
+// ===== RESOURCE MANAGEMENT HUB MODELS =====
+
+model Employee {
+  id                String   @id @default(cuid())
+  businessId        String
+  firstName         String
+  lastName          String
+  email             String
+  phone             String?
+  position          String
+  department        String?
+  hireDate          DateTime
+  terminationDate   DateTime?
+  employmentStatus  String   @default("active") // active, terminated, on_leave
+  compensationTier  String?
+  salaryBandId      String?
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+
+  business              User                    @relation(fields: [businessId], references: [id])
+  timeEntries           TimeEntry[]
+  shifts                Shift[]
+  benefitsEnrollments   BenefitsEnrollment[]
+  performanceReviews    PerformanceReview[]
+  feedbacks             EmployeeFeedback[]
+  recognitions          Recognition[]           @relation("RecognitionReceiver")
+  goals                 Goal[]
+  compensations         Compensation[]
+}
+
+model JobPosting {
+  id            String       @id @default(cuid())
+  businessId    String
+  title         String
+  description   String
+  requirements  String?
+  location      String?
+  dealCategory  String?
+  status        String       @default("draft") // draft, published, closed
+  createdAt     DateTime     @default(now())
+  closesAt      DateTime?
+
+  business     User          @relation(fields: [businessId], references: [id])
+  applications Application[]
+}
+
+model Application {
+  id           String     @id @default(cuid())
+  jobPostingId String
+  firstName    String
+  lastName     String
+  email        String
+  phone        String?
+  resumeUrl    String?
+  coverLetter  String?
+  status       String     @default("applied") // applied, screening, interview, offer, hired, rejected
+  appliedAt    DateTime   @default(now())
+  notes        String?
+
+  jobPosting JobPosting @relation(fields: [jobPostingId], references: [id])
+}
+
+model TimeEntry {
+  id          String   @id @default(cuid())
+  employeeId  String
+  clockIn     DateTime
+  clockOut    DateTime?
+  dealId      String?
+  locationLat Float?
+  locationLng Float?
+  approved    Boolean  @default(false)
+  createdAt   DateTime @default(now())
+
+  employee Employee @relation(fields: [employeeId], references: [id])
+}
+
+model Shift {
+  id         String   @id @default(cuid())
+  employeeId String
+  dealId     String?
+  startTime  DateTime
+  endTime    DateTime
+  notes      String?
+  createdAt  DateTime @default(now())
+
+  employee Employee @relation(fields: [employeeId], references: [id])
+}
+
+model PayrollRun {
+  id          String   @id @default(cuid())
+  businessId  String
+  periodStart DateTime
+  periodEnd   DateTime
+  status      String   @default("draft") // draft, approved, paid
+  totalGross  Float    @default(0)
+  totalNet    Float    @default(0)
+  createdAt   DateTime @default(now())
+}
+
+model BenefitsEnrollment {
+  id             String   @id @default(cuid())
+  employeeId     String
+  benefitType    String   // health_insurance, commission_plan, staff_discount, transport, meals
+  coverageLevel  String?
+  startDate      DateTime
+  endDate        DateTime?
+  costToEmployee Float    @default(0)
+  costToEmployer Float    @default(0)
+  status         String   @default("active")
+  createdAt      DateTime @default(now())
+
+  employee Employee @relation(fields: [employeeId], references: [id])
+}
+
+model PerformanceReview {
+  id               String    @id @default(cuid())
+  employeeId       String
+  reviewerId       String
+  reviewTemplateId String?
+  periodStart      DateTime
+  periodEnd        DateTime
+  overallRating    Int?
+  strengths        String?
+  improvements     String?
+  goalsAchieved    String?
+  status           String    @default("pending") // pending, in_progress, completed
+  submittedAt      DateTime?
+  createdAt        DateTime  @default(now())
+
+  employee Employee @relation(fields: [employeeId], references: [id])
+}
+
+model Goal {
+  id          String   @id @default(cuid())
+  employeeId  String
+  title       String
+  description String?
+  type        String   @default("individual") // individual, team, company
+  keyResults  Json?
+  progress    Float    @default(0)
+  startDate   DateTime
+  endDate     DateTime
+  status      String   @default("active")
+  dealMetric  String?
+  createdAt   DateTime @default(now())
+
+  employee Employee @relation(fields: [employeeId], references: [id])
+}
+
+model EmployeeFeedback {
+  id           String   @id @default(cuid())
+  employeeId   String
+  senderId     String?
+  feedbackType String   // pulse_survey, suggestion, concern, general
+  rating       Int?
+  comments     String
+  isAnonymous  Boolean  @default(false)
+  submittedAt  DateTime @default(now())
+
+  employee Employee @relation(fields: [employeeId], references: [id])
+}
+
+model Recognition {
+  id         String   @id @default(cuid())
+  senderId   String
+  receiverId String
+  message    String
+  badge      String?  // star, rockstar, team_player, deal_closer
+  isPublic   Boolean  @default(true)
+  createdAt  DateTime @default(now())
+
+  receiver Employee @relation(fields: [receiverId], references: [id], name: "RecognitionReceiver")
+}
+
+model Compensation {
+  id              String   @id @default(cuid())
+  employeeId      String
+  type            String   // salary, bonus, commission, equity
+  amount          Float
+  currency        String   @default("USD")
+  effectiveDate   DateTime
+  endDate         DateTime?
+  reason          String?
+  approvalStatus  String   @default("pending") // pending, approved, rejected
+  approvedBy      String?
+  createdAt       DateTime @default(now())
+
+  employee Employee @relation(fields: [employeeId], references: [id])
+}
+
+model SalaryBand {
+  id         String   @id @default(cuid())
+  businessId String
+  role       String
+  level      String
+  minSalary  Float
+  midSalary  Float
+  maxSalary  Float
+  createdAt  DateTime @default(now())
 }
