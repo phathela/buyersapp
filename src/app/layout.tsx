@@ -7,6 +7,7 @@ export const metadata: Metadata = {
   title: "BuyersApp - Find the best deals. Save money. Buy smarter.",
   description:
     "A deal marketplace connecting buyers with businesses. Access exclusive deals, earn rewards, and make smarter purchases.",
+  icons: [{ rel: "icon", url: "/favicon.svg", type: "image/svg+xml" }],
 };
 
 export default function RootLayout({

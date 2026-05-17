@@ -4,7 +4,7 @@
     "buildCommand": "npx prisma generate && npm run build"
   },
   "deploy": {
-    "startCommand": "npx prisma db push --accept-data-loss && npx prisma db seed && npm start",
+    "startCommand": "npx prisma db push --accept-data-loss 2>&1 || true; npx prisma db seed 2>&1 || true; npm start",
     "healthcheckPath": "/api/health"
   }
 }
