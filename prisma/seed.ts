@@ -6,7 +6,13 @@ const prisma = new PrismaClient();
 async function main() {
   console.log("🌱 Seeding RM Hub data...");
 
-  // Create or get business user
+  // Check if already seeded
+  const existing = await prisma.employee.findFirst();
+  if (existing) {
+    console.log("  ✓ Data already exists, skipping seed");
+    return;
+  }
+
   const passwordHash = await bcrypt.hash("password123", 10);
   const business = await prisma.user.upsert({
     where: { email: "business@example.com" },
@@ -122,7 +128,6 @@ async function main() {
       });
     }
   }
-  // Active clock for Sarah
   await prisma.timeEntry.create({
     data: { employeeId: employees[0].id, clockIn: new Date(), clockOut: null },
   });
